@@ -1,0 +1,25 @@
+FROM bitnami/spark:latest
+
+# Passer à root pour les installations
+USER root
+
+# Installer pip et psycopg2-binary (pour accéder à PostgreSQL)
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    pip3 install psycopg2-binary pandas
+
+# Créer un dossier pour le driver JDBC
+RUN mkdir -p /opt/jars
+
+# Télécharger le driver PostgreSQL JDBC
+ADD https://jdbc.postgresql.org/download/postgresql-42.2.23.jar /opt/jars/postgresql.jar
+
+# Donner accès en lecture au user Spark
+RUN chmod -R a+rX /opt/jars
+
+# Revenir à l’utilisateur Spark (non-root)
+USER 1001
+
+# Copier le script de facturation dans le conteneur
+WORKDIR /opt/app
+COPY billing_app.py ./billing_app.py

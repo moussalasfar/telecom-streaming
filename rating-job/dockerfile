@@ -1,0 +1,25 @@
+FROM bitnami/spark:latest
+
+# Switch to root to install dependencies
+USER root
+
+# Installer pip et psycopg2-binary
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    pip3 install psycopg2-binary
+
+# Create directory for JDBC driver
+RUN mkdir -p /opt/jars
+
+# Download PostgreSQL JDBC driver
+ADD https://jdbc.postgresql.org/download/postgresql-42.2.23.jar /opt/jars/postgresql.jar
+
+# Set permissions so non-root Spark user can read the driver
+RUN chmod -R a+rX /opt/jars
+
+# Revert to non-root for security
+USER 1001
+
+# Copy the Spark job into the container
+WORKDIR /opt/app
+COPY rating_app.py ./rating_app.py

@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  spark:
+    image: bitnami/spark:latest
+    depends_on:
+      - kafka
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: >
+      bash -c "/opt/bitnami/spark/bin/spark-submit
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0
+      --master local[*]
+      /app/spark_app.py"
+
+  kafka-producer:
+    build: .
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: always
+  
+  rating-job:
+    build:
+      context: ./rating-job
+      dockerfile: dockerfile
+    image: telecom/rating-app:latest
+    depends_on:
+      - kafka
+      - postgres
+    command: >
+      bash -c "/opt/bitnami/spark/bin/spark-submit
+      --master local[*]
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0 \
+      --jars /opt/jars/postgresql.jar
+      /opt/app/rating_app.py"
+    
+  billing-job:
+      build:
+        context: ./billing-job
+        dockerfile: dockerfile
+      image: telecom/billing-app:latest
+      depends_on:
+        - postgres
+        - rating-job
+      command: >
+        bash -c "/opt/bitnami/spark/bin/spark-submit
+        --master local[*]
+        --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0 \
+        --jars /opt/jars/postgresql.jar
+        /opt/app/billing_app.py"
+
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: telecomdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  metabase:
+    image: metabase/metabase
+    ports:
+      - "3000:3000"
+    environment:
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=telecomdb
+      - MB_DB_PORT=5432
+      - MB_DB_USER=postgres
+      - MB_DB_PASS=postgres
+      - MB_DB_HOST=postgres
+    depends_on:
+      - postgres
+# Declare named volumes at the top level, _outside_ of services
+volumes:
+  postgres_data:
+
+
