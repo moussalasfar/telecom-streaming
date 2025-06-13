@@ -1,26 +1,28 @@
 📡 Telecom Billing Pipeline
 
-Ce projet met en œuvre le traitement de données pour une entreprise télécom, en utilisant Apache Kafka, Apache Spark (Structured Streaming & Batch), et PostgreSQL. L’objectif est de traiter des événements télécom (CDR/EDR), de les tarifer en temps réel, puis d’agréger les données pour produire des indicateurs de facturation mensuels.
+This project implements a real time data processing for a telecom company using Apache Kafka, Apache Spark (Structured Streaming & Batch), PostgreSQL and Metabase. The goal is to process telecom events (CDR/EDR), rate them in real-time, and then aggregate them to produce monthly billing summaries and key financial indicators.
 
-🧱 Architecture du Projet
+🧱 Projet Architecture
 
 ![data (1)](https://github.com/user-attachments/assets/e79a4a1b-b6d5-403c-916e-630c4433766f)
-🚀 Objectifs
+🚀 Goals
 
-Tarifer en temps réel les événements de communication (voix, données, SMS).
+Real-time rating of telecom events (voice, data, SMS).
 
-Agréger les usages par client et par periodes.
+Monthly usage aggregation per customer.
 
-Générer des indicateurs financiers et opérationnels.
+Generate billing summaries and financial indicators.
 
 ⚙️ Technologies
 
-Apache Kafka (Streaming d’événements)
+Apache Kafka (event streaming)
 
-Apache Spark (Structured Streaming & Batch)
+Apache Spark (Structured Streaming and Batch)
 
-PostgreSQL (Stockage des résultats)
+PostgreSQL (data storage)
 
-Metabase pour l'analyse
+Metabase for analys
 
-Docker (environnement reproductible)
+Docker (for reproducible environment)
+
+
