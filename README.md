@@ -21,7 +21,7 @@ Apache Spark (Structured Streaming and Batch)
 
 PostgreSQL (data storage)
 
-Metabase for analys
+Metabase for analytics and reporting
 
 Docker (for reproducible environment)
 
